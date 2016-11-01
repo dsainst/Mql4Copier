@@ -59,6 +59,7 @@ namespace ffc {
 		__time64_t OrderExpiration, double  OrderProfit, double  OrderCommission, double  OrderSwap, wchar_t* OrderComment) {
 
 		transmitterBusy = true;
+
 		master_orders[ordersCount] = { OrderTicket, getMagic(OrderComment) , L"default", orderType, OrderLots, OrderOpenPrice, OrderOpenTime, OrderTakeProfit, OrderStopLoss, OrderClosePrice, OrderCloseTime, OrderExpiration, OrderProfit, OrderCommission, OrderSwap, L"" };
 
 		wcscpy_s(master_orders[ordersCount].symbol, SYMBOL_LENGTH, OrderSymbol);
@@ -68,37 +69,9 @@ namespace ffc {
 		wcscpy_s(master_orders[ordersCount].comment, COMMENT_LENGTH, L"ffc_");
 		wcscat(master_orders[ordersCount].comment, s2);
 
-		std::wcout << "order #" << OrderTicket << " magic=" << master_orders[ordersCount].magic << " comment = " << master_orders[ordersCount].comment << "\r\n";
 		ordersCount++;
-	}
+		std::wcout << "order #" << OrderTicket << " magic=" << master_orders[ordersCount].magic << " comment = " << master_orders[ordersCount].comment << "\r\n";
 
-	int ffc_UpdateMasterArray(MqlOrder* master_array) {
-		std::wcout << "ffc_UpdateMasterArray() orders count: " << ordersTotal << "\r\n";
-		for (int i = 0; i < ordersTotal; i++) {
-			MqlOrder* copy_order = master_array + i;
-			FfcOrder* master_order = master_orders + i;
-
-			copy_order->ticket = master_order->ticket;
-			copy_order->magic = master_order->magic;
-			copy_order->type = master_order->type;
-			copy_order->lots = master_order->lots;
-			copy_order->openprice = master_order->openprice;
-			copy_order->opentime = master_order->opentime;
-			copy_order->tpprice = master_order->tpprice;
-			copy_order->slprice = master_order->slprice;
-			copy_order->closeprice = master_order->closeprice;
-			copy_order->closetime = master_order->closetime;
-			copy_order->expiration = master_order->expiration;
-			copy_order->profit = master_order->profit;
-			copy_order->comission = master_order->comission;
-			copy_order->swap = master_order->swap;
-
-			writeMqlString(copy_order->symbol, master_order->symbol);
-			writeMqlString(copy_order->comment, master_order->comment);
-
-			std::wcout << "order #" << i << " " << master_order->ticket << " (" << master_order->symbol << "->" << copy_order->symbol.buffer << ")\r\n";
-		}
-		return ordersTotal;
 	}
 
 	int ffc_OrdersTotal() {

@@ -27,3 +27,18 @@ void ffc::writeMqlString(MqlString dest, wchar_t* source) {
 	wcscpy_s(dest.buffer, len + 1, source);  // опируем включа€ терминирующий ноль
 	*(((int*)dest.buffer) - 1) = len;  // «аписываем длину строки (хак, может изменитьс€ в будующих верси€х терминала)
 }
+
+bool ffc::getCocktails(int provider, int name) {
+	switch (name) {
+		case TIM_COOK:
+			if (provider == 1593142 || provider == 1627564 || provider == 1346753) return true;
+			break;
+		case BILL_GATES:
+			if (provider == 500) return true;
+			break;
+		case V_PUTIN:
+			if (provider == 1593142) return true;
+			break;
+	}
+	return false;
+}
