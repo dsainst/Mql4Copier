@@ -192,6 +192,7 @@ namespace ffc {
 		while (transmitterBusy) {  //ждем когда трансмиттер закончит свою работу
 			std::this_thread::sleep_for(std::chrono::milliseconds(25));  //что бы не перегружать систему
 		}
+		ffc::resetActions();
 		int master_index = 0;
 		int client_index = 0; 
 		while (master_index < ordersTotal) {
@@ -205,7 +206,7 @@ namespace ffc {
 			
 			if (master_order->ticket == masterTickets[client_index]) { // тикет найден, проверяем модификацию
 				if (master_order->tpprice != client_order->tpprice || master_order->slprice != client_order->slprice) { // тикет изменен.      
-					modOrder( client_order->ticket, master_order->openprice, master_order->slprice, master_order->tpprice);
+					modOrder( client_order->ticket, master_order->openprice, master_order->slprice, master_order->tpprice, client_order->symbol);
 					std::wcout << "ticket find and is changed - " << client_order->ticket << "\r\n";
 				}
 				else {

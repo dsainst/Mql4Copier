@@ -13,14 +13,15 @@ MqlTick symbol_tick;
 double mpo[2];
 double mpc[2];
 double kurs = 1; 
+double value;
 
 //Ќормализует лот с учетом минимального значени€ и допустимого шага
 double normLot(double lots, string symbol) {
    double lot_step = SymbolInfoDouble(symbol, SYMBOL_VOLUME_STEP);
-   int steps = int(ceil(value/lot_step));
-   value = steps * lot_step;
-   value = MathMax(value, SymbolInfoDouble(symbol, SYMBOL_VOLUME_MIN));
-   return(MathMin(value, SymbolInfoDouble(symbol, SYMBOL_VOLUME_MAX)));
+   int steps = int(ceil(lots/lot_step));
+   lots = steps * lot_step;
+   lots = MathMax(lots, SymbolInfoDouble(symbol, SYMBOL_VOLUME_MIN));
+   return(MathMin(lots, SymbolInfoDouble(symbol, SYMBOL_VOLUME_MAX)));
 }
 //Ќормализует цену
 double normPrice(double price, string symbol)

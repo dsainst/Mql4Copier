@@ -1,1 +1,16 @@
-﻿  testMQL4.vcxproj -> C:\Users\TomKein\Documents\GitHub\FairForex\Test\Debug\testMQL4.dll
+﻿  utils.cpp
+utils.cpp(7): warning C4996: 'wcstok': wcstok has been changed to conform with the ISO C standard, adding an extra context parameter. To use the legacy Microsoft wcstok, define _CRT_NON_CONFORMING_WCSTOK.
+  C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\corecrt_wstring.h(254): note:  см. объявление "wcstok"
+utils.cpp(8): warning C4996: 'wcstok': wcstok has been changed to conform with the ISO C standard, adding an extra context parameter. To use the legacy Microsoft wcstok, define _CRT_NON_CONFORMING_WCSTOK.
+  C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\corecrt_wstring.h(254): note:  см. объявление "wcstok"
+utils.cpp(9): warning C4996: 'wcstok': wcstok has been changed to conform with the ISO C standard, adding an extra context parameter. To use the legacy Microsoft wcstok, define _CRT_NON_CONFORMING_WCSTOK.
+  C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\corecrt_wstring.h(254): note:  см. объявление "wcstok"
+utils.cpp(17): warning C4996: 'wcstok': wcstok has been changed to conform with the ISO C standard, adding an extra context parameter. To use the legacy Microsoft wcstok, define _CRT_NON_CONFORMING_WCSTOK.
+  C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\corecrt_wstring.h(254): note:  см. объявление "wcstok"
+utils.cpp(18): warning C4996: 'wcstok': wcstok has been changed to conform with the ISO C standard, adding an extra context parameter. To use the legacy Microsoft wcstok, define _CRT_NON_CONFORMING_WCSTOK.
+  C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\corecrt_wstring.h(254): note:  см. объявление "wcstok"
+utils.cpp(26): warning C4018: <: несоответствие типов со знаком и без знака
+  main.cpp
+main.cpp(4): fatal error C1083: Не удается открыть файл включение: Poco/NamedMutex.h: No such file or directory
+  ActionManager.cpp
+  Создание кода...

@@ -6,7 +6,7 @@
 *.sdf
 *.lastbuildstate
 *.opendb
-Debug/
+Debug/*
 x64*
 testMQL4.VC.VC.opendb
 testMQL4.VC.db

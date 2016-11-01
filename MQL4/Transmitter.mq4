@@ -26,9 +26,18 @@ void fnReplaceString(string &text,string from,string to);
 //+------------------------------------------------------------------+
 int OnInit()
   {
-   if (!EventSetMillisecondTimer(100)) return(INIT_FAILED);
+//--- create timer
+   if (!EventSetMillisecondTimer(100)) {
+      Print("Timer not set");
+      return(INIT_FAILED);
+   }
       
-   if (!ffc_Init()) return(INIT_FAILED);
+   if (!ffc_Init()) {
+   Print("Second run");
+   return(INIT_FAILED);
+   }
+   
+   Print("OnInit OK!");
    
    return(INIT_SUCCEEDED);
   }
@@ -37,8 +46,10 @@ int OnInit()
 //+------------------------------------------------------------------+
 void OnDeinit(const int reason)
   {
-	  EventKillTimer();
-	ffc_DeInit();     
+  ffc_DeInit();
+//--- destroy timer
+   EventKillTimer();
+      
   }
 //+------------------------------------------------------------------+
 //| Expert tick function                                             |

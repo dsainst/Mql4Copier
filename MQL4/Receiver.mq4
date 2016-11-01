@@ -9,13 +9,24 @@
 #property strict
 
 
+#define JOB_EXIT        0
+#define JOB_CREATE      1
+#define JOB_MODIFY      2
+#define JOB_DELETE      3
+#define JOB_CLOSE       4
+#define JOB_PRINT_ORDER 5
+#define JOB_PRINT_TEXT  6
+#define JOB_DRAW_ORDER  7
+#define JOB_SHOW_VALUE  8
+#define JOB_MSG_BOX     9
+
 struct OrderAction
 {
 	int			action;
 	int			ticket;
+	int			type;
 	int			magic;
 	string		symbol;
-	int			type;
 	double		lots;
 	double		openprice;
 	double		tpprice;
@@ -24,16 +35,12 @@ struct OrderAction
 	string		comment;
 };
 
+
 #import "testMQL4.dll"
-int ffc_Init();
-void ffc_DeInit();
-int ffc_UpdateMasterArray(OrderAction& mql_order_action[]);
-int ffc_OrdersTotal();
-string ffc_getSymbol(int index);
-int ffc_getInt(int index);
+bool ffc_RInit(OrderAction& mql_order_action[], int length);
+void ffc_RDeInit();
 void ffc_ROrdersCount(int orders);
 int ffc_RGetJob();
-void ffc_InitActions(OrderAction& mql_order_action[]);
 int ffc_ROrdersUpdate(int OrderTicket, int orderMagic, string OrderSymbol, int orderType,
 		double OrderLots, double OrderOpenPrice, datetime OrderOpenTime,
 		double OrderTakeProfit, double OrderStopLoss, double  OrderClosePrice, datetime  OrderCloseTime,
@@ -43,6 +50,8 @@ int ffc_ROrdersUpdate(int OrderTicket, int orderMagic, string OrderSymbol, int o
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
 
+#include "ffc.mq4"
+#include "Order.mq4"
 #define MAX_ORDER_COUNT 200
 
 int totalOrders = 0;
@@ -52,53 +61,28 @@ int OnInit()
   {
     if (!EventSetMillisecondTimer(100)) return(INIT_FAILED);
       
-   if (ffc_Init() != 1) { 
-      Print("Повторный запуск!");
-      return(INIT_FAILED);
-   }
    
    for (int i=0; i<MAX_ORDER_COUNT; i++) {  //Выделяем память под строку (надо сделать один раз в начале)
       StringInit(mql_order_action[i].symbol, 16);  
       StringInit(mql_order_action[i].comment, 32);
    }
+   mql_order_action[0].symbol = "default";
+   
+   if (ffc_RInit(mql_order_action, MAX_ORDER_COUNT) != 1) { 
+      Print("Повторный запуск!");
+      return(INIT_FAILED);
+   }
+   
    return(INIT_SUCCEEDED);
   }
   
-
-//+------------------------------------------------------------------+
-//| Expert deinitialization function                                 |
-//+------------------------------------------------------------------+
-void OnDeinit(const int reason)
-  {
-   Print("Deinit");
-   EventKillTimer();
-   ffc_DeInit();
-      
-  }
-//+------------------------------------------------------------------+
-//| Expert tick function                                             |
-//+------------------------------------------------------------------+
-void OnTick()
-  {
-//---
-   
-  }
 //+------------------------------------------------------------------+
 //| Timer function                                                   |
 //+------------------------------------------------------------------+
 void OnTimer()
   {
-  
-   //EventKillTimer();
-   /*
-   totalOrders = ffc_UpdateMasterArray(mql_order_action);
-   Print("Total orders - ", totalOrders);
-   */
-   int out = 0;
-   int out2 = 0;
-   int mode = 0;
-   double ask_price   = 0;
-   double bid_price = 0;
+   if (!checkMarket()) return;
+   
    int ordersTotal = OrdersTotal();
    int ordersCount = 0;
    bool res = false;
@@ -110,121 +94,42 @@ void OnTimer()
             OrderOpenPrice(), OrderOpenTime(), OrderTakeProfit(), OrderStopLoss(),
             OrderClosePrice(), OrderCloseTime(), OrderExpiration(),
             OrderProfit(), OrderCommission(), OrderSwap(), OrderComment());
-            //Print("OrderComment = ",OrderComment()," - i= ",OrderTicket());
       }
       ordersCount++;
    }
    
-   int action = 0;
-   bool symbol_init;
-   ffc_InitActions(mql_order_action);
-   action = ffc_RGetJob();
-   if (action>0) {
-      for (int i=0; i<action; i++) {
-         switch (mql_order_action[i].type) {
-            case 0:
-            case 2:
-            case 5:
-               mode = MODE_ASK;
-               break;
-            case 1:
-            case 3:
-            case 4:
-               mode = MODE_BID;
-               break;
-         }
-         Alert ("index=",i," - action= ", action," - mql_action=",mql_order_action[i].action," - ticket=",mql_order_action[i].ticket);
-         if (mql_order_action[i].action>0) {
-         
-            switch (mql_order_action[i].action) {
-               case 1: // открытие нового ордера
-                  ask_price   = MarketInfo(mql_order_action[i].symbol,mode); // Запрос текущей цены
-                   if (ask_price == 0) {
-                     symbol_init = SymbolSelect(mql_order_action[i].symbol, 1);
-                  } else symbol_init = true;
-                  if (symbol_init && ((ask_price <= mql_order_action[i].openprice && mql_order_action[i].type==0) || (ask_price >= mql_order_action[i].openprice && mql_order_action[i].type==1))) {  // расписать для buy & sell ------------------- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                        ask_price   = MarketInfo(mql_order_action[i].symbol,mode); // Запрос текущей цены
-                        out = OrderSend(mql_order_action[i].symbol,mql_order_action[i].type,mql_order_action[i].lots,ask_price,3,0,0,mql_order_action[i].comment,mql_order_action[i].magic);
-                  } else
-                  Alert ("Цена не соответствует требованиям, текущая цена = ", ask_price, " - мастер-цена = ", mql_order_action[i].openprice);
-                  //Alert (GetLastError());
-                  break;
-               case 2: // закрытие ордера
-                  closeOrder(mql_order_action[i].symbol,mql_order_action[i].type,mql_order_action[i].ticket,mql_order_action[i].lots);
-                  break;
-               case 3: // модификация ордера
-                  res = OrderModify(mql_order_action[i].ticket,mql_order_action[i].openprice,mql_order_action[i].slprice,mql_order_action[i].tpprice,0,Blue);
-                  if(!res)
-                     Print("Error in OrderModify. Error code=",GetLastError());
-                  else
-                     Print("Order modified successfully.");
-                     Alert (mql_order_action[i].ticket," - ",mql_order_action[i].openprice," - ",mql_order_action[i].slprice," - ",mql_order_action[i].tpprice);
-                 break;
-            }
-         }
-      }
-   }
+   int action = ffc_RGetJob();
    
-  }
-  
-  void closeOrder(string symbol,int type, int Ticket, double Lot) { 
-  int mode = 0;
-  double Price_Cls = 0;
-  string Text;
-   while(true)                                  // Цикл закрытия орд.
-     {
-      switch(type)                        // По типу ордера
-        {
-         case 0 :
-            mode = MODE_BID;          // Ордер Buy
-            Text = "Buy ";                 // Текст для Buy
-            break;                 // Из switch
-         case 1: 
-            mode = MODE_ASK;                 // Ордер Sell
-            Text="Sell ";                       // Текст для Sell
-        }
-        Price_Cls = MarketInfo(symbol,mode);
-      Alert("Попытка закрыть ",Text," ",Lot," - ",Ticket,". Ожидание ответа..",symbol);
-      bool Ans=OrderClose(Ticket,Lot,Price_Cls,2);// Закрытие ордера
-      //--------------------------------------------------------- 8 --
-      if (Ans==true)                            // Получилось :)
-        {
-         Alert ("Закрыт ордер ",Text," ",Ticket);
-         break;                                 // Выход из цикла закр
-        }
-      //--------------------------------------------------------- 9 --
-      int Error=GetLastError();                 // Не получилось :(
-      switch(Error)                             // Преодолимые ошибки
-        {
-         case 135:Alert("Цена изменилась. Пробуем ещё раз..");
-            RefreshRates();                     // Обновим данные
-            continue;                           // На след. итерацию
-         case 136:Alert("Нет цен. Ждём новый тик..");
-            while(RefreshRates()==false)        // До нового тика
-               Sleep(1);                        // Задержка в цикле
-            continue;                           // На след. итерацию
-         case 146:Alert("Подсистема торговли занята. Пробуем ещё..");
-            Sleep(500);                         // Простое решение
-            RefreshRates();                     // Обновим данные
-            continue;                           // На след. итерацию
-                                     // На след. итерацию
-        }
-      switch(Error)                             // Критические ошибки
-        {
-         case 2 : Alert("Общая ошибка.");
-            break;                              // Выход из switch
-         case 5 : Alert("Старая версия клиентского терминала.");
-            break;                              // Выход из switch
-         case 64: Alert("Счет заблокирован.");
-            break;                              // Выход из switch
-         case 133:Alert("Торговля запрещена");
-            break;                              // Выход из switch
-         case 4108:Alert("Такого тикета не существует..");
-            break;
-         default: Alert("Возникла ошибка ",Error);//Другие варианты   
-        }
-      break;                                    // Выход из цикла закр
-     }
-   }
+	   
+   for (int i = 0; i < action; i++) {
+		switch (mql_order_action[i].action) {
+			case JOB_CREATE: CreateOrder    (mql_order_action[i]); break;
+			case JOB_MODIFY: ModifyOrder    (mql_order_action[i]); break;
+			case JOB_DELETE: DeleteOrder    (mql_order_action[i]); break;
+			case JOB_CLOSE: CloseOrder     (mql_order_action[i]); break;
+			case 5: break;
+			case 6: break;
+			case 7: break;
+			case 8: break;
+			case 9: break;
+			case 10: break;
+		}
+		Alert("action=",mql_order_action[i].action," ticket=",mql_order_action[i].ticket," type=",mql_order_action[i].type," kolvo=",action);
+	}
+}
 //+------------------------------------------------------------------+
-
+//| Expert deinitialization function                                 |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+  {
+   Print("Deinit");
+   EventKillTimer();
+   ffc_RDeInit();
+      
+  }
+//+------------------------------------------------------------------+
+//| Expert tick function                                             |
+//+------------------------------------------------------------------+
+void OnTick()
+  {
+  }
