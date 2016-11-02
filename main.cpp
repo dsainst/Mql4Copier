@@ -17,6 +17,7 @@ int ordersCount		= 0;
 int ordersTotal		= 0;
 bool ordersValid	= false;
 bool transmitterBusy = false;
+int cocktails[20][20] = {0};
 #pragma data_seg()
 #pragma comment(linker, "/SECTION:shared,RWS")
 //------------------------------------------------
@@ -26,6 +27,8 @@ Poco::NamedMutex mutex("ffc_mutex");
 //---------- Переменные ресивера -----------------
 int masterTickets[MAX_ORDER_COUNT];
 bool recieverInit = false;
+long id_login = 0;
+int id_cocktails = 0;
 
 
 //---------- Переменные трансмиттера -------------
@@ -35,6 +38,8 @@ bool transmitterInit = false;
 
 
 namespace ffc {
+
+
 
 	//---------- Transmitter part ----------------
 	bool ffc_Init() {
@@ -69,8 +74,8 @@ namespace ffc {
 		wcscpy_s(master_orders[ordersCount].comment, COMMENT_LENGTH, L"ffc_");
 		wcscat(master_orders[ordersCount].comment, s2);
 
-		ordersCount++;
 		std::wcout << "order #" << OrderTicket << " magic=" << master_orders[ordersCount].magic << " comment = " << master_orders[ordersCount].comment << "\r\n";
+		ordersCount++;
 
 	}
 
@@ -124,11 +129,21 @@ namespace ffc {
 	// ------------------------------------------------------------------- //
 
 
+	int* setCocktails(int provider[], int name) {
+		int length = sizeof(provider) / sizeof(provider[0]);
+		std::wcout << " length = " << length << "\r\n";
+		for (int i = 0; i < length; i++) {
+			cocktails[name][i] = provider[i];
+			std::wcout << i << " - " << provider[i] << " sizeof=" << sizeof(provider[0]) << " sizeof2=" << sizeof(provider) <<"\r\n";
+		}
+		return cocktails[name];
+	}
+
 	void ffc_RDeInit() {
 		recieverInit = false;
 	}
 
-	bool ffc_RInit(MqlAction* action_array, int length) {
+	bool ffc_RInit(MqlAction* action_array, int length, long login) {
 		if (recieverInit) return false; //Повторная инициализация
 		if (AllocConsole()) {
 			freopen("CONOUT$", "w", stdout);
@@ -136,10 +151,19 @@ namespace ffc {
 			SetConsoleOutputCP(CP_UTF8);// GetACP());
 			SetConsoleCP(CP_UTF8);
 		}
+
+		int a[] = { 64,11,43,39,15,3892 };
+
+		int* qwoe = setCocktails(a, BILL_GATES);
+
+		id_login = login;
 		ordersRCount = 0;
 		recieverInit = true;
 		initActions(action_array, length);
-		std::wcout << "Receiver inited.\r\n";
+
+		id_cocktails = initCocktails(id_login); //751137852
+
+		std::wcout << "Receiver inited. - " << id_cocktails << " - " << qwoe[W_BUFFETT] << " sizeof- " << sizeof(a) << " - " << qwoe[5] << "\r\n";
 		return true; //Инициализация успешна
 	}
 
@@ -170,9 +194,15 @@ namespace ffc {
 		int client_index = 0; 
 		while (master_index < ordersTotal) {
 			auto master_order = master_orders + master_index;
+
+			if (id_cocktails == 0 || getCocktails(master_order->magic, id_cocktails) == 0) {
+				master_index++;
+				continue;
+			}
+
 			if (client_index >= ordersRCount) {  //если на клиенте нет ордеров, то открываем.
 				createOrder(master_order);
-				master_index++;  
+				master_index++;
 				continue;  
 			}
 			auto client_order = client_orders + client_index;

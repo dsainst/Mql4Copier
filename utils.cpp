@@ -2,6 +2,7 @@
 #include "utils.h"
 
 
+
 int ffc::getMagic(wchar_t* comment) {
 	wchar_t* pwc;
 	pwc = wcstok(comment, L"_");
@@ -28,6 +29,17 @@ void ffc::writeMqlString(MqlString dest, wchar_t* source) {
 	*(((int*)dest.buffer) - 1) = len;  // Записываем длину строки (хак, может измениться в будующих версиях терминала)
 }
 
+
+//cюда нужно получить инфу об уже имеющихся счетах и коктейлях
+int ffc::initCocktails(long acc_number) {
+	// запрос на сервер, к какому коктейлю привязан аккаунт, пока забил вручную
+	if (acc_number == 751137852) {
+		return TIM_COOK;
+	}
+	return false;
+}
+
+
 bool ffc::getCocktails(int provider, int name) {
 	switch (name) {
 		case TIM_COOK:
@@ -40,5 +52,12 @@ bool ffc::getCocktails(int provider, int name) {
 			if (provider == 1593142) return true;
 			break;
 	}
+	return false;
+}
+
+
+
+bool ffc::showCocktails(int name) {
+
 	return false;
 }

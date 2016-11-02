@@ -9,7 +9,6 @@ ffc_Init
 ffc_DeInit
 ffc_OrdersTotal
 
-ffc_UpdateMasterArray
 ffc_RInit
 ffc_ROrdersUpdate
 ffc_RGetJob
