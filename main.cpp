@@ -73,7 +73,7 @@ namespace ffc {
 		_itow(OrderTicket, s2, 10);
 		wcscpy_s(master_orders[ordersCount].comment, COMMENT_LENGTH, L"ffc_");
 		wcscat(master_orders[ordersCount].comment, s2);
-
+		
 		std::wcout << "order #" << OrderTicket << " magic=" << master_orders[ordersCount].magic << " comment = " << master_orders[ordersCount].comment << "\r\n";
 		ordersCount++;
 

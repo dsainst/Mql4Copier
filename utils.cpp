@@ -33,9 +33,9 @@ void ffc::writeMqlString(MqlString dest, wchar_t* source) {
 //cюда нужно получить инфу об уже имеющихся счетах и коктейлях
 int ffc::initCocktails(long acc_number) {
 	// запрос на сервер, к какому коктейлю привязан аккаунт, пока забил вручную
-	if (acc_number == 751137852) {
+	//if (acc_number == 1732282) {
 		return TIM_COOK;
-	}
+	//}
 	return false;
 }
 
