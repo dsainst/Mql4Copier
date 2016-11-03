@@ -14,6 +14,7 @@ double mpo[2];
 double mpc[2];
 double kurs = 1; 
 double value;
+double symbolPoint;
 
 //Нормализует лот с учетом минимального значения и допустимого шага
 double normLot(double lots, string symbol) {
@@ -45,6 +46,7 @@ bool checkSymbol(string symbol) {
    mpo[OP_SELL] = symbol_tick.bid;
    mpc[OP_BUY]  = symbol_tick.bid;
    mpc[OP_SELL] = symbol_tick.ask;
+   symbolPoint = MarketInfo(symbol, MODE_POINT);
    return true; 
 }
 
