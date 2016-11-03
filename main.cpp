@@ -7,6 +7,7 @@
 #include "ActionManager.h"
 
 #define MAX_ORDER_COUNT	200
+#define POINT 0.0001
 
 
 
@@ -237,5 +238,43 @@ namespace ffc {
 		ordersRCount = 0;
 		return actionsCount;
 	}
+
+	int ffc_RGetJob2() {
+		while (transmitterBusy) {  //ждем когда трансмиттер закончит свою работу
+			std::this_thread::sleep_for(std::chrono::milliseconds(25));  //что бы не перегружать систему
+		}
+		ffc::resetActions();
+		for (int master_index = 0; master_index < ordersTotal; master_index++) {
+			auto master_order = master_orders + master_index;
+			int found = false;
+			for (int client_index = 0; client_index < ordersRCount; client_index++) {
+				if (master_order->ticket == masterTickets[client_index]) {
+					found = true;
+					auto client_order = client_orders + client_index;
+					client_order->closetime = 1;
+					if (abs(master_order->slprice - client_order->slprice) > POINT ||
+						abs(master_order->tpprice - client_order->tpprice) > POINT) {
+						modOrder(client_order->ticket, client_order->openprice, master_order->slprice, master_order->tpprice, client_order->symbol);
+					}
+					break;
+				}
+			}
+			if (!found) {
+				createOrder(master_order);
+			}
+		}
+		for (int client_index = 0; client_index < ordersRCount; client_index++) {
+			auto client_order = client_orders + client_index;
+			if (client_order->closetime == 0) {
+				if (client_order->type < 2)
+					closeOrder(client_order);
+				else
+					deleteOrder(client_order);
+			}
+		}
+		ordersRCount = 0;
+		return actionsCount;
+	}
+
 //--------------------------------------------------------------------------------------------
 }
