@@ -180,7 +180,7 @@ namespace ffc {
 
 		masterTickets[ordersRCount] = getMasterTicket(ROrderComment); 
 
-		std::wcout << "masterTickets #" << masterTickets[ordersRCount] << "\r\n";
+		//std::wcout << "masterTickets #" << masterTickets[ordersRCount] << "\r\n";
 		ordersRCount++;
 		return ordersRCount;
 	}
@@ -191,61 +191,13 @@ namespace ffc {
 			std::this_thread::sleep_for(std::chrono::milliseconds(25));  //что бы не перегружать систему
 		}
 		ffc::resetActions();
-		int master_index = 0;
-		int client_index = 0; 
-		while (master_index < ordersTotal) {
+		for (int master_index = 0; master_index < ordersTotal; master_index++) {
 			auto master_order = master_orders + master_index;
 
 			if (id_cocktails == 0 || getCocktails(master_order->magic, id_cocktails) == 0) {
-				master_index++;
 				continue;
 			}
 
-			if (client_index >= ordersRCount) {  //если на клиенте нет ордеров, то открываем.
-				createOrder(master_order);
-				master_index++;
-				continue;  
-			}
-			auto client_order = client_orders + client_index;
-			
-			if (master_order->ticket == masterTickets[client_index]) { // тикет найден, проверяем модификацию
-				if (master_order->tpprice != client_order->tpprice || master_order->slprice != client_order->slprice) { // тикет изменен.      
-					modOrder( client_order->ticket, master_order->openprice, master_order->slprice, master_order->tpprice, client_order->symbol);
-					std::wcout << "ticket find and is changed - " << client_order->ticket << "\r\n";
-				}
-				else {
-					std::wcout << "ticket is original - " << client_order->ticket << "\r\n";
-				}
-				client_index++;
-				master_index++;
-				continue;
-			}
-			if (master_order->ticket > masterTickets[client_index]) { // закрылся ордер на мастере, закрываем на клиенте
-				std::wcout << "ticket is not find (close ticket) - " << client_order->ticket << "\r\n";
-				closeOrder(client_order);
-				client_index++;
-				continue;
-			}
-			createOrder(master_order);  //Открываем то что закрыто вручную или по какойто причине не смогло открыться
-			master_index++;
-		}
-
-		for (; client_index < ordersRCount; client_index++) {
-			auto client_order = client_orders + client_index;
-			std::wcout << "ticket is not find (close ticket) - " << client_order->ticket << "\r\n";
-			closeOrder(client_order);
-		}
-		ordersRCount = 0;
-		return actionsCount;
-	}
-
-	int ffc_RGetJob2() {
-		while (transmitterBusy) {  //ждем когда трансмиттер закончит свою работу
-			std::this_thread::sleep_for(std::chrono::milliseconds(25));  //что бы не перегружать систему
-		}
-		ffc::resetActions();
-		for (int master_index = 0; master_index < ordersTotal; master_index++) {
-			auto master_order = master_orders + master_index;
 			int found = false;
 			for (int client_index = 0; client_index < ordersRCount; client_index++) {
 				if (master_order->ticket == masterTickets[client_index]) {
@@ -265,6 +217,7 @@ namespace ffc {
 		}
 		for (int client_index = 0; client_index < ordersRCount; client_index++) {
 			auto client_order = client_orders + client_index;
+
 			if (client_order->closetime == 0) {
 				if (client_order->type < 2)
 					closeOrder(client_order);

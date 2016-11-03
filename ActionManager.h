@@ -48,6 +48,7 @@ namespace ffc {
 	void deleteOrder(int ticket);
 	void closeOrder(int ticket, double lots, double openprice);
 	void closeOrder(FfcOrder* order);
+	void deleteOrder(FfcOrder* order);
 
 
 	void showValue(int line, wchar_t* value);

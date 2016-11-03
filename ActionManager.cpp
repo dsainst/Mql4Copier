@@ -54,7 +54,7 @@ void ffc::createOrder(FfcOrder* order) {
 	writeMqlString(action->comment, order->comment);
 }
 
-void ffc::modOrder(int ticket, double openprice, double slprice, double tpprice, wchar_t* symbol) {
+void ffc::modOrder(int ticket, double openprice, double slprice, double tpprice, wchar_t* symbol) { //
 	if (actionsCount + 1 >= actionsMaxCount) return;
 	auto action = actions + actionsCount;
 	actionsCount++;
@@ -64,7 +64,7 @@ void ffc::modOrder(int ticket, double openprice, double slprice, double tpprice,
 	action->type = 0;
 	action->magic = 0;
 	action->lots = 0;
-	action->openprice = openprice;
+	action->openprice = openprice; // для рыночных ордеров возможно нужен 0 - проверить!!!
 	action->slprice = slprice;
 	action->tpprice = tpprice;
 	action->expiration = 0;
@@ -129,6 +129,15 @@ void ffc::closeOrder(FfcOrder* order) {
 	writeMqlString(action->comment, L"");
 
 	std::wcout << "symbol - " << order->symbol << "\r\n";
+}
+
+void ffc::deleteOrder(FfcOrder* order) {
+	if (actionsCount + 1 >= actionsMaxCount) return;
+	auto action = actions + actionsCount;
+	actionsCount++;
+
+	action->actionId = JOB_DELETE;
+	action->ticket = order->ticket;
 }
 
 void ffc::showValue(int line, wchar_t* value) {
